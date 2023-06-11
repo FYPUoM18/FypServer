@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 from pymongo import MongoClient
+from datetime import datetime
 
 app = FastAPI()
 
@@ -49,3 +50,26 @@ def get_sensor_data():
     # Return the sensor data as a response
     print("GET request received")
     return {"message": "GET request received"}
+
+@app.post("/api/data")
+def get_data(start_time: str, end_time: str, building_name: str, device_id: str):
+    # Convert start_time and end_time to datetime objects
+    start_datetime = datetime.fromisoformat(start_time)
+    end_datetime = datetime.fromisoformat(end_time)
+
+    # Query MongoDB based on the provided parameters
+    query = {
+        'timestamp': {'$gte': start_datetime, '$lte': end_datetime},
+        'building': building_name,
+        'device_id': device_id
+    }
+    result = list(collection.find(query))
+
+    return result
+
+@app.get("/api/buildings")
+def get_building_names():
+    # Use distinct() method to retrieve unique building names
+    building_names = collection.distinct('building')
+
+    return building_names
