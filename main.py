@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from pymongo import MongoClient
 from datetime import datetime
+from fastapi import FastAPI, UploadFile, File
 
 app = FastAPI()
 
@@ -66,6 +67,16 @@ def get_data(start_time: str, end_time: str, building_name: str, device_id: str)
     result = list(collection.find(query))
 
     return result
+
+@app.post("/upload_files")
+async def upload_files(files: list[UploadFile] = File(...)):
+    for file in files:
+        file_path = f"C:\\Users\\musab\\OneDrive\\Desktop\\projects\\test\\{file.filename}"
+        with open(file_path, "wb") as f:
+            contents = await file.read()
+            f.write(contents)
+    
+    return {"message": "Files uploaded successfully"}
 
 @app.get("/api/buildings")
 def get_building_names():
